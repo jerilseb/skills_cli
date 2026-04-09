@@ -3,6 +3,7 @@
 import process from 'node:process';
 import packageJson from '../package.json' with { type: 'json' };
 import { runAdd } from './add.js';
+import { maybeUpdateGitignore } from './fs-utils.js';
 import { runPush } from './push.js';
 
 function showHelp(): void {
@@ -52,6 +53,7 @@ async function main(): Promise<void> {
         for (const source of args) {
           await runAdd(source);
         }
+        await maybeUpdateGitignore(process.cwd());
         return;
       }
       case 'push': {

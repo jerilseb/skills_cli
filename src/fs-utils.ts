@@ -1,8 +1,10 @@
-import { access, lstat, mkdir, readlink, realpath, rm, symlink } from 'node:fs/promises';
+import { access, appendFile, lstat, mkdir, readFile, readlink, realpath, rm, symlink } from 'node:fs/promises';
 import { constants } from 'node:fs';
+import { createInterface } from 'node:readline';
 import { dirname, join, relative, resolve } from 'node:path';
 import { platform } from 'node:os';
-import { AGENTS_SKILLS_DIR, CLAUDE_DIR, CLAUDE_SKILLS_DIR, PI_DIR, PI_SKILLS_DIR } from './constants.js';
+import { AGENTS_DIR, AGENTS_SKILLS_DIR, CLAUDE_DIR, CLAUDE_SKILLS_DIR, PI_DIR, PI_SKILLS_DIR } from './constants.js';
+import { c } from './log.js';
 
 export async function pathExists(path: string): Promise<boolean> {
   try {
@@ -105,4 +107,43 @@ export async function ensureClaudeSkillsSymlink(projectDir: string): Promise<voi
 
 export async function ensurePiSkillsSymlink(projectDir: string): Promise<void> {
   await ensureSkillsSymlink(projectDir, PI_SKILLS_DIR);
+}
+
+function prompt(question: string): Promise<string> {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.trim().toLowerCase());
+    });
+  });
+}
+
+export async function maybeUpdateGitignore(projectDir: string): Promise<void> {
+  const gitignorePath = join(projectDir, '.gitignore');
+
+  if (!(await pathExists(gitignorePath))) {
+    return;
+  }
+
+  const content = await readFile(gitignorePath, 'utf-8');
+  const dirs = [AGENTS_DIR, CLAUDE_DIR, PI_DIR];
+  const missing = dirs.filter((dir) => {
+    const pattern = new RegExp(`(^|\\n)\\/?${dir.replace('.', '\\.')}\\/?($|\\n)`);
+    return !pattern.test(content);
+  });
+
+  if (missing.length === 0) {
+    return;
+  }
+
+  const answer = await prompt(
+    `${c.cyan('?')} Add ${c.bold(missing.join(', '))} to .gitignore? ${c.dim('(Y/n)')} `
+  );
+
+  if (answer === '' || answer === 'y' || answer === 'yes') {
+    const suffix = content.endsWith('\n') ? '' : '\n';
+    await appendFile(gitignorePath, suffix + missing.join('\n') + '\n');
+    console.log(`${c.green('✔')} Updated .gitignore`);
+  }
 }
