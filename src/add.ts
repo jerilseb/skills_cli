@@ -1,6 +1,6 @@
 import { mkdir, rm } from 'node:fs/promises';
 import { basename, join } from 'node:path';
-import { AGENTS_SKILLS_DIR, SOURCE_SKILLS_DIR } from './constants.js';
+import { AGENTS_SKILLS_DIR, PUSH_REMOTE, SOURCE_SKILLS_DIR } from './constants.js';
 import { ensureProjectSkillDirs, validateSkillName } from './fs-utils.js';
 import { cleanupTempDir, cloneRepo } from './git.js';
 import { copySkillDirectory, readSkillMetadata } from './skill.js';
@@ -15,8 +15,18 @@ export function parseAddSource(input: string): ParsedAddSource {
   const trimmed = input.trim();
   const atIndex = trimmed.lastIndexOf('@');
 
+  // Bare skill name (no @ or /) — shorthand for the default skills repo
+  if (atIndex === -1 && !trimmed.includes('/')) {
+    const skillName = validateSkillName(trimmed);
+    return {
+      cloneUrl: PUSH_REMOTE,
+      displaySource: PUSH_REMOTE.replace(/\.git$/, ''),
+      skillName,
+    };
+  }
+
   if (atIndex <= 0 || atIndex === trimmed.length - 1) {
-    throw new Error('Expected source in the form <owner/repo@skill_name>');
+    throw new Error('Expected source in the form <owner/repo@skill_name> or a bare skill name');
   }
 
   const repoPart = trimmed.slice(0, atIndex);

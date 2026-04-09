@@ -9,13 +9,13 @@ function showHelp(): void {
   console.log(`skills_cli
 
 Usage:
-  npx @jeril/skills_cli add <owner/repo@skill_name>
+  npx @jeril/skills_cli add <owner/repo@skill_name> [...]
   npx @jeril/skills_cli push <skill_name>
-  skills_cli add <owner/repo@skill_name>
+  skills_cli add <owner/repo@skill_name> [...]
   skills_cli push <skill_name>
 
 Commands:
-  add     Clone a repo and copy skills/<skill_name> into .agents/skills
+  add     Clone a repo and copy skills/<skill_name> into .agents/skills (accepts multiple)
   push    Push .agents/skills/<skill_name> to jerilseb/skills under skills/<skill_name>
 
 Notes:
@@ -46,11 +46,12 @@ async function main(): Promise<void> {
   try {
     switch (command) {
       case 'add': {
-        const source = args[0];
-        if (!source) {
-          throw new Error('Usage: skills_cli add <owner/repo@skill_name>');
+        if (args.length === 0) {
+          throw new Error('Usage: skills_cli add <owner/repo@skill_name> [...]');
         }
-        await runAdd(source);
+        for (const source of args) {
+          await runAdd(source);
+        }
         return;
       }
       case 'push': {
