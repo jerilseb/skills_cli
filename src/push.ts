@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { AGENTS_SKILLS_DIR, PUSH_REMOTE, SOURCE_SKILLS_DIR } from './constants.js';
 import { validateSkillName } from './fs-utils.js';
 import { cleanupTempDir, cloneRepo, runGit } from './git.js';
+import { c } from './log.js';
 import { copySkillDirectory, readSkillMetadata } from './skill.js';
 
 export async function runPush(skillNameInput: string): Promise<void> {
@@ -15,7 +16,7 @@ export async function runPush(skillNameInput: string): Promise<void> {
   let tempDir: string | null = null;
 
   try {
-    console.log(`Cloning ${PUSH_REMOTE}...`);
+    console.log(c.dim(`Cloning ${PUSH_REMOTE}...`));
     tempDir = await cloneRepo(PUSH_REMOTE);
 
     const remoteSkillsDir = join(tempDir, SOURCE_SKILLS_DIR);
@@ -33,17 +34,22 @@ export async function runPush(skillNameInput: string): Promise<void> {
     });
 
     if (!status.stdout.trim()) {
-      console.log(`No changes to push for ${skillName}`);
+      console.log('');
+      console.log(`${c.yellow('–')} No changes to push for ${c.bold(skillName)}`);
+      console.log('');
       return;
     }
 
     await runGit(['commit', '-m', `Add/update skill ${skillName}`], { cwd: tempDir });
     await runGit(['push'], { cwd: tempDir });
 
-    console.log(`Pushed ${skillName}`);
-    console.log(`  remote: ${PUSH_REMOTE}`);
-    console.log(`  path: ${SOURCE_SKILLS_DIR}/${skillName}`);
-    console.log(`  title: ${metadata.title}`);
+    console.log('');
+    console.log(`${c.green('✔')} Pushed ${c.bold(c.cyan(skillName))}`);
+    console.log('');
+    console.log(`  ${c.bold('Title')}    ${metadata.title}`);
+    console.log(`  ${c.bold('Remote')}   ${c.dim(PUSH_REMOTE)}`);
+    console.log(`  ${c.bold('Path')}     ${c.yellow(`${SOURCE_SKILLS_DIR}/${skillName}`)}`);
+    console.log('');
   } finally {
     if (tempDir) {
       await cleanupTempDir(tempDir).catch(() => undefined);

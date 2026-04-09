@@ -3,6 +3,7 @@ import { basename, join } from 'node:path';
 import { AGENTS_SKILLS_DIR, PUSH_REMOTE, SOURCE_SKILLS_DIR } from './constants.js';
 import { ensureProjectSkillDirs, validateSkillName } from './fs-utils.js';
 import { cleanupTempDir, cloneRepo } from './git.js';
+import { c } from './log.js';
 import { copySkillDirectory, readSkillMetadata } from './skill.js';
 
 export interface ParsedAddSource {
@@ -58,11 +59,11 @@ export async function runAdd(sourceInput: string): Promise<void> {
   let tempDir: string | null = null;
 
   try {
-    console.log(`Cloning ${parsed.displaySource}...`);
+    console.log(c.dim(`Cloning ${parsed.displaySource}...`));
     tempDir = await cloneRepo(parsed.cloneUrl);
 
     const sourceSkillDir = join(tempDir, SOURCE_SKILLS_DIR, parsed.skillName);
-    const sourceMetadata = await readSkillMetadata(sourceSkillDir);
+    await readSkillMetadata(sourceSkillDir);
 
     const { agentsSkillsDir } = await ensureProjectSkillDirs(projectDir);
     const destinationSkillDir = join(agentsSkillsDir, parsed.skillName);
@@ -71,15 +72,19 @@ export async function runAdd(sourceInput: string): Promise<void> {
     await rm(destinationSkillDir, { recursive: true, force: true });
     await copySkillDirectory(sourceSkillDir, destinationSkillDir);
 
-    const installedMetadata = await readSkillMetadata(destinationSkillDir);
+    const metadata = await readSkillMetadata(destinationSkillDir);
+    const skillPath = join(AGENTS_SKILLS_DIR, basename(destinationSkillDir));
 
-    console.log(`Added ${parsed.skillName}`);
-    console.log(`  source: ${parsed.displaySource}`);
-    console.log(`  title: ${sourceMetadata.title}`);
-    console.log(`  path: ${join(AGENTS_SKILLS_DIR, basename(destinationSkillDir))}`);
-    console.log(`  claude: .claude/skills -> .agents/skills`);
-    console.log(`  pi: .pi/skills -> .agents/skills`);
-    console.log(`  description: ${installedMetadata.description}`);
+    console.log('');
+    console.log(`${c.green('✔')} Added ${c.bold(c.cyan(parsed.skillName))}`);
+    console.log('');
+    console.log(`  ${c.bold('Title')}        ${metadata.title}`);
+    console.log(`  ${c.bold('Source')}       ${c.dim(parsed.displaySource)}`);
+    console.log(`  ${c.bold('Path')}         ${c.yellow(skillPath)}`);
+    console.log(`  ${c.bold('Symlinks')}     ${c.dim('.claude/skills')} ${c.dim('→')} ${c.dim('.agents/skills')}`);
+    console.log(`               ${c.dim('.pi/skills')} ${c.dim('→')} ${c.dim('.agents/skills')}`);
+    console.log(`  ${c.bold('Description')}  ${c.dim(metadata.description)}`);
+    console.log('');
   } finally {
     if (tempDir) {
       await cleanupTempDir(tempDir).catch(() => undefined);
