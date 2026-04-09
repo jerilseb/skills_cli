@@ -21,6 +21,7 @@ Commands:
 Notes:
   - Skills are installed into .agents/skills by default
   - .claude/skills is symlinked to .agents/skills
+  - .pi/skills is symlinked to .agents/skills
   - Source repos are assumed to contain a top-level skills/ directory
 
 Options:

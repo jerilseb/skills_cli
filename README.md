@@ -25,6 +25,7 @@ Clones a source repo and copies `skills/<skill_name>` into the current project's
 It also ensures:
 - `.agents/skills` exists
 - `.claude/skills` is a symlink to `.agents/skills`
+- `.pi/skills` is a symlink to `.agents/skills`
 
 ```bash
 npx @jeril/skills_cli add <owner/repo@skill_name>
@@ -85,32 +86,6 @@ Build and run:
 npm run build
 node dist/cli.js --help
 ```
-
-## Publish to npm
-
-Login:
-
-```bash
-npm login
-```
-
-Build + dry run:
-
-```bash
-npm run build
-npm publish --dry-run
-```
-
-Publish:
-
-```bash
-npm publish
-```
-
-Notes:
-- package name: `@jeril/skills_cli`
-- package is published as public via `publishConfig.access = public`
-- `prepublishOnly` runs the build automatically before publish
 
 ## Requirements
 

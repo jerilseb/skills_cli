@@ -2,7 +2,7 @@ import { access, lstat, mkdir, readlink, realpath, rm, symlink } from 'node:fs/p
 import { constants } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { platform } from 'node:os';
-import { AGENTS_SKILLS_DIR, CLAUDE_DIR, CLAUDE_SKILLS_DIR } from './constants.js';
+import { AGENTS_SKILLS_DIR, CLAUDE_DIR, CLAUDE_SKILLS_DIR, PI_DIR, PI_SKILLS_DIR } from './constants.js';
 
 export async function pathExists(path: string): Promise<boolean> {
   try {
@@ -44,32 +44,37 @@ export function validateSkillName(skillName: string): string {
 export async function ensureProjectSkillDirs(projectDir: string): Promise<{
   agentsSkillsDir: string;
   claudeSkillsDir: string;
+  piSkillsDir: string;
 }> {
   const agentsSkillsDir = join(projectDir, AGENTS_SKILLS_DIR);
   const claudeDir = join(projectDir, CLAUDE_DIR);
+  const piDir = join(projectDir, PI_DIR);
   const claudeSkillsDir = join(projectDir, CLAUDE_SKILLS_DIR);
+  const piSkillsDir = join(projectDir, PI_SKILLS_DIR);
 
   await mkdir(agentsSkillsDir, { recursive: true });
   await mkdir(claudeDir, { recursive: true });
+  await mkdir(piDir, { recursive: true });
   await ensureClaudeSkillsSymlink(projectDir);
+  await ensurePiSkillsSymlink(projectDir);
 
-  return { agentsSkillsDir, claudeSkillsDir };
+  return { agentsSkillsDir, claudeSkillsDir, piSkillsDir };
 }
 
-export async function ensureClaudeSkillsSymlink(projectDir: string): Promise<void> {
+async function ensureSkillsSymlink(projectDir: string, linkPath: string): Promise<void> {
   const agentsSkillsDir = join(projectDir, AGENTS_SKILLS_DIR);
-  const claudeSkillsDir = join(projectDir, CLAUDE_SKILLS_DIR);
-  const linkParent = dirname(claudeSkillsDir);
+  const skillsDir = join(projectDir, linkPath);
+  const linkParent = dirname(skillsDir);
   const relativeTarget = relative(linkParent, agentsSkillsDir) || '.';
 
-  if (!(await pathExists(claudeSkillsDir))) {
-    await symlink(relativeTarget, claudeSkillsDir, platform() === 'win32' ? 'junction' : 'dir');
+  if (!(await pathExists(skillsDir))) {
+    await symlink(relativeTarget, skillsDir, platform() === 'win32' ? 'junction' : 'dir');
     return;
   }
 
-  const stats = await lstat(claudeSkillsDir);
+  const stats = await lstat(skillsDir);
   if (stats.isSymbolicLink()) {
-    const existingTarget = await readlink(claudeSkillsDir);
+    const existingTarget = await readlink(skillsDir);
     const resolvedExisting = resolve(linkParent, existingTarget);
     const resolvedExpected = resolve(agentsSkillsDir);
 
@@ -86,12 +91,18 @@ export async function ensureClaudeSkillsSymlink(projectDir: string): Promise<voi
       return;
     }
 
-    await rm(claudeSkillsDir, { recursive: true, force: true });
-    await symlink(relativeTarget, claudeSkillsDir, platform() === 'win32' ? 'junction' : 'dir');
+    await rm(skillsDir, { recursive: true, force: true });
+    await symlink(relativeTarget, skillsDir, platform() === 'win32' ? 'junction' : 'dir');
     return;
   }
 
-  throw new Error(
-    `${CLAUDE_SKILLS_DIR} already exists and is not a symlink. Please move it away and try again.`
-  );
+  throw new Error(`${linkPath} already exists and is not a symlink. Please move it away and try again.`);
+}
+
+export async function ensureClaudeSkillsSymlink(projectDir: string): Promise<void> {
+  await ensureSkillsSymlink(projectDir, CLAUDE_SKILLS_DIR);
+}
+
+export async function ensurePiSkillsSymlink(projectDir: string): Promise<void> {
+  await ensureSkillsSymlink(projectDir, PI_SKILLS_DIR);
 }

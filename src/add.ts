@@ -68,6 +68,7 @@ export async function runAdd(sourceInput: string): Promise<void> {
     console.log(`  title: ${sourceMetadata.title}`);
     console.log(`  path: ${join(AGENTS_SKILLS_DIR, basename(destinationSkillDir))}`);
     console.log(`  claude: .claude/skills -> .agents/skills`);
+    console.log(`  pi: .pi/skills -> .agents/skills`);
     console.log(`  description: ${installedMetadata.description}`);
   } finally {
     if (tempDir) {
