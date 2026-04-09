@@ -79,7 +79,7 @@ export async function runGit(
 
 export async function cloneRepo(url: string, ref?: string): Promise<string> {
   const tempDir = await mkdtemp(join(tmpdir(), 'skills-'));
-  const args = ['clone', '--depth', '1'];
+  const args = ['clone', '--single-branch', '--depth', '1'];
 
   if (ref) {
     args.push('--branch', ref);
