@@ -44,7 +44,7 @@ export async function runPush(skillNameInput: string): Promise<void> {
     await runGit(['push'], { cwd: tempDir });
 
     console.log('');
-    console.log(`${c.green('✔')} Pushed ${c.bold(c.cyan(skillName))}`);
+    console.log(`${c.green('✅')} Pushed ${c.bold(c.cyan(skillName))}`);
     console.log('');
     console.log(`  ${c.bold('Title')}    ${metadata.title}`);
     console.log(`  ${c.bold('Remote')}   ${c.dim(PUSH_REMOTE)}`);

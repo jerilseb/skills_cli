@@ -144,6 +144,6 @@ export async function maybeUpdateGitignore(projectDir: string): Promise<void> {
   if (answer === '' || answer === 'y' || answer === 'yes') {
     const suffix = content.endsWith('\n') ? '' : '\n';
     await appendFile(gitignorePath, suffix + missing.join('\n') + '\n');
-    console.log(`${c.green('✔')} Updated .gitignore`);
+    console.log(`${c.green('✅')} Updated .gitignore`);
   }
 }

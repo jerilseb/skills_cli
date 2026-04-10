@@ -3,32 +3,33 @@
 import process from 'node:process';
 import packageJson from '../package.json' with { type: 'json' };
 import { runAdd } from './add.js';
+import { runClean } from './clean.js';
 import { maybeUpdateGitignore } from './fs-utils.js';
+import { c } from './log.js';
 import { runPush } from './push.js';
 
 function showHelp(): void {
-  console.log(`skills_cli
-
-Usage:
-  npx @jeril/skills_cli add <owner/repo@skill_name> [...]
-  npx @jeril/skills_cli push <skill_name>
-  skills_cli add <owner/repo@skill_name> [...]
-  skills_cli push <skill_name>
-
-Commands:
-  add     Clone a repo and copy skills/<skill_name> into .agents/skills (accepts multiple)
-  push    Push .agents/skills/<skill_name> to jerilseb/skills under skills/<skill_name>
-
-Notes:
-  - Skills are installed into .agents/skills by default
-  - .claude/skills is symlinked to .agents/skills
-  - .pi/skills is symlinked to .agents/skills
-  - Source repos are assumed to contain a top-level skills/ directory
-
-Options:
-  -h, --help       Show help
-  -v, --version    Show version
-`);
+  console.log('');
+  console.log(`  ${c.bold('skills_cli')} ${c.dim(`v${packageJson.version}`)}`);
+  console.log(`  ${c.dim('Manage agent skills across AI coding assistants')}`);
+  console.log('');
+  console.log(`  ${c.bold('Usage')}`);
+  console.log(`    ${c.cyan('$')} skills_cli ${c.green('<command>')} ${c.dim('[options]')}`);
+  console.log('');
+  console.log(`  ${c.bold('Commands')}`);
+  console.log(`    ${c.green('add')} ${c.dim('<owner/repo@skill> [...]')}   Add skills from a repo`);
+  console.log(`    ${c.green('push')} ${c.dim('<skill_name>')}              Push a skill to the remote repo`);
+  console.log(`    ${c.green('clean')}                          Remove .agents, .claude, .pi directories`);
+  console.log('');
+  console.log(`  ${c.bold('Options')}`);
+  console.log(`    ${c.dim('-h, --help')}       Show help`);
+  console.log(`    ${c.dim('-v, --version')}    Show version`);
+  console.log('');
+  console.log(`  ${c.bold('Notes')}`);
+  console.log(`    ${c.dim('Skills are installed into .agents/skills by default.')}`);
+  console.log(`    ${c.dim('.claude/skills and .pi/skills are symlinked to .agents/skills.')}`);
+  console.log(`    ${c.dim('A bare skill name (no owner/repo@) pulls from jerilseb/skills.')}`);
+  console.log('');
 }
 
 async function main(): Promise<void> {
@@ -64,11 +65,15 @@ async function main(): Promise<void> {
         await runPush(skillName);
         return;
       }
+      case 'clean': {
+        await runClean();
+        return;
+      }
       default:
         throw new Error(`Unknown command: ${command}`);
     }
   } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
+    console.error(`\n  ${c.red('✖')} ${error instanceof Error ? error.message : String(error)}\n`);
     process.exitCode = 1;
   }
 }

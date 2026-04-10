@@ -76,7 +76,7 @@ export async function runAdd(sourceInput: string): Promise<void> {
     const skillPath = join(AGENTS_SKILLS_DIR, basename(destinationSkillDir));
 
     console.log('');
-    console.log(`${c.green('✔')} Added ${c.bold(c.cyan(parsed.skillName))}`);
+    console.log(`${c.green('✅')} Added ${c.bold(c.cyan(parsed.skillName))}`);
     console.log('');
     console.log(`  ${c.bold('Title')}        ${metadata.title}`);
     console.log(`  ${c.bold('Source')}       ${c.dim(parsed.displaySource)}`);
