@@ -1,6 +1,6 @@
 {
   "name": "@jeril/skills_cli",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "CLI to add and push agent skills",
   "license": "MIT",
   "publishConfig": {
