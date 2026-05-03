@@ -39,6 +39,12 @@ You can add multiple skills in one command:
 npx @jeril/skills_cli add owner/repo@skill1 owner/repo@skill2
 ```
 
+If you pass a repo without a skill name, the CLI opens an interactive multi-select picker for all directories under that repo's `skills/` directory. Use Space to toggle skills and Enter to install the selected skills:
+
+```bash
+npx @jeril/skills_cli add owner/repo
+```
+
 A bare skill name (without `owner/repo@`) is a shorthand that pulls from the default skills repo (`jerilseb/skills`):
 
 ```bash

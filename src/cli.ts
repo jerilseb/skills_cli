@@ -17,7 +17,7 @@ function showHelp(): void {
   console.log(`    ${c.cyan('$')} skills_cli ${c.green('<command>')} ${c.dim('[options]')}`);
   console.log('');
   console.log(`  ${c.bold('Commands')}`);
-  console.log(`    ${c.green('add')} ${c.dim('<owner/repo@skill> [...]')}   Add skills from a repo`);
+  console.log(`    ${c.green('add')} ${c.dim('<skill|owner/repo[@skill]> [...]')} Add skills from a repo`);
   console.log(`    ${c.green('push')} ${c.dim('<skill_name>')}              Push a skill to the remote repo`);
   console.log(`    ${c.green('clean')}                          Remove .agents, .claude, .pi directories`);
   console.log('');
@@ -28,7 +28,8 @@ function showHelp(): void {
   console.log(`  ${c.bold('Notes')}`);
   console.log(`    ${c.dim('Skills are installed into .agents/skills by default.')}`);
   console.log(`    ${c.dim('.claude/skills and .pi/skills are symlinked to .agents/skills.')}`);
-  console.log(`    ${c.dim('A bare skill name (no owner/repo@) pulls from jerilseb/skills.')}`);
+  console.log(`    ${c.dim('A bare skill name pulls from jerilseb/skills.')}`);
+  console.log(`    ${c.dim('Passing owner/repo without @skill opens a multi-select picker.')}`);
   console.log('');
 }
 
@@ -49,7 +50,7 @@ async function main(): Promise<void> {
     switch (command) {
       case 'add': {
         if (args.length === 0) {
-          throw new Error('Usage: skills_cli add <owner/repo@skill_name> [...]');
+          throw new Error('Usage: skills_cli add <skill_name|owner/repo[@skill_name]> [...]');
         }
         for (const source of args) {
           await runAdd(source);

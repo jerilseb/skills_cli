@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join, normalize, resolve, sep } from 'node:path';
 import { spawn } from 'node:child_process';
 
-const CLONE_TIMEOUT_MS = 60_000;
+const CLONE_TIMEOUT_MS = 120_000;
 
 export class GitError extends Error {
   constructor(message: string) {
